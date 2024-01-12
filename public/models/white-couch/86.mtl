@@ -1,0 +1,19 @@
+# File produced by AccuTrans 3D
+
+newmtl Traditiona
+  Ns 112.76
+  d 1.0
+  illum 2
+  Kd 0.34 0.13 0.04
+  Ka 0.6118 0.3922 0.2431
+  Ks 0.898 0.898 0.898
+  map_Kd E:\BOIS-~50.jpg
+
+newmtl Traditiona_1
+  Ns 77.2
+  d 1.0
+  illum 2
+  Kd 0.80 0.77 0.65
+  Ka 0.902 0.8902 0.8235
+  Ks 0.898 0.898 0.898
+  map_Kd E:\PARIS~17.jpg
