@@ -1,73 +1,162 @@
 import * as THREE from "three";
+import { Shaders } from "./utils/shaders";
+import { Constants } from "./utils/constants";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-const scene = new THREE.Scene();
+// Define variables related to the original/ordinary scene.
+let camera: THREE.PerspectiveCamera,
+  scene: THREE.Scene,
+  renderer: THREE.WebGLRenderer,
+  controls: OrbitControls,
+  object: THREE.Object3D;
 
-// Set up the camera:
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
+// Define variables related to post-processing, i.e. depth-mapping.
+let postScene: THREE.Scene,
+  postCamera: THREE.Camera,
+  postMaterial: THREE.ShaderMaterial,
+  target: THREE.WebGLRenderTarget | null;
 
-camera.position.z = 50;
+let supportsExtension = true;
 
-// Create the renderer:
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 1);
+const initialise = () => {
+  const width: number = window.innerWidth;
+  const height: number = window.innerHeight;
 
-// Append the renderer to the DOM. Prevent scrolling as well!
-document.body.style.margin = "0";
-document.body.style.overflow = "hidden";
-document.body.appendChild(renderer.domElement);
+  renderer = new THREE.WebGLRenderer();
 
-// Light the scene appropriately, i.e. makes model visible.
-const topLight = new THREE.DirectionalLight(0xffffff, 1);
-topLight.position.set(500, 500, 500);
-topLight.castShadow = true;
-scene.add(topLight);
+  if (
+    renderer.capabilities.isWebGL2 === false &&
+    renderer.extensions.has("WEBGL_depth_texture") === false
+  ) {
+    supportsExtension = false;
+    // TODO: #error <div>
+    return;
+  }
 
-const ambientLight = new THREE.AmbientLight(0x333333, 5);
-scene.add(ambientLight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(width, height);
+  document.body.appendChild(renderer.domElement);
 
-// Configure controls using OrbitControls:
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.minDistance = 10;
-controls.maxDistance = 500;
-controls.zoomSpeed = 0.5;
+  camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 50);
 
-// Load .obj model!
-const loader = new OBJLoader();
-loader.load("models/white-couch/86.obj", function (object) {
-  scene.add(object);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
 
-  // Calculate the object's center,
-  const box = new THREE.Box3().setFromObject(object);
-  const center = box.getCenter(new THREE.Vector3());
+  controls.minDistance = 10;
+  controls.maxDistance = 100;
 
-  // ...and then position the camera to face toward the object's center.
-  camera.position.set(center.x, center.y, center.z + 100);
-  camera.lookAt(center);
+  // Handle model rendering & depth mapping.
+  createRenderTarget();
+  createScene();
+  loadObject();
+  createDepthMap();
 
-  // Update controls as necessary!
-  controls.target.set(center.x, center.y, center.z);
-  controls.update();
-});
+  onWindowResize();
+  window.addEventListener("resize", onWindowResize);
+};
 
-function animate() {
+const createRenderTarget = () => {
+  const width: number = window.innerWidth;
+  const height: number = window.innerHeight;
+
+  if (target) target.dispose();
+
+  const format = Constants.params.format;
+  const type = Constants.params.type;
+
+  target = new THREE.WebGLRenderTarget(width, height);
+  target.texture.minFilter = THREE.NearestFilter;
+  target.texture.magFilter = THREE.NearestFilter;
+  target.stencilBuffer =
+    format === (THREE.DepthStencilFormat as unknown as typeof format)
+      ? true
+      : false;
+  target.depthTexture = new THREE.DepthTexture(width, height);
+  target.depthTexture.format = format;
+  target.depthTexture.type = type;
+};
+
+const createScene = () => (scene = new THREE.Scene());
+
+const loadObject = () => {
+  // Load .obj model!
+  const loader = new OBJLoader();
+  loader.load(
+    "/models/white-couch/86.obj",
+    (obj: THREE.Object3D) => {
+      object = obj;
+      scene.add(object);
+
+      // Find central point of model.
+      const box = new THREE.Box3().setFromObject(object);
+      const center = box.getCenter(new THREE.Vector3());
+
+      // Set camera slightly away in the z direction, but still looking at the central point.
+      camera.position.set(center.x, center.y, center.z + 50);
+      camera.lookAt(center);
+
+      // Update controls as necessary.
+      controls.target.set(center.x, center.y, center.z);
+      controls.update();
+    },
+    (xhr: ProgressEvent<EventTarget>) => {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded.");
+    },
+    (error: string | unknown) => {
+      console.error("An error occurred: " + error);
+    }
+  );
+};
+
+const createDepthMap = () => {
+  postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  postMaterial = new THREE.ShaderMaterial({
+    vertexShader: Shaders.depthMap.vertexShader,
+    fragmentShader: Shaders.depthMap.fragmentShader,
+    uniforms: {
+      cameraNear: { value: camera.near },
+      cameraFar: { value: camera.far },
+      tDiffuse: { value: null },
+      tDepth: { value: null },
+    },
+  });
+
+  const postPlane: THREE.PlaneGeometry = new THREE.PlaneGeometry(2, 2);
+  const postQuad: THREE.Mesh = new THREE.Mesh(postPlane, postMaterial);
+
+  postScene = new THREE.Scene();
+
+  postScene.add(postQuad);
+};
+
+const animate = () => {
+  if (!supportsExtension) return;
+
   requestAnimationFrame(animate);
-  controls.update();
+
+  renderer.setRenderTarget(target);
   renderer.render(scene, camera);
-}
 
-animate();
+  postMaterial.uniforms.tDiffuse.value = target?.texture;
+  postMaterial.uniforms.tDepth.value = target?.depthTexture;
 
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setRenderTarget(null);
+  renderer.render(postScene, postCamera);
+
   controls.update();
-});
+};
+
+const onWindowResize = () => {
+  const aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+
+  const dpr = renderer.getPixelRatio();
+  target?.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
+initialise();
+animate();

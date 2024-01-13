@@ -1,3 +1,14 @@
 body {
   margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Place "Export JSON" button top-left, slightly away from edges. */
+#export-json-btn {
+  position: absolute;
+  z-index: 9999;
+  top: 1em;
+  left: 1em;
+  cursor: pointer;
 }
