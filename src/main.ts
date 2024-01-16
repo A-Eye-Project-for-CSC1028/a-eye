@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Depth } from "./models/types";
 import { Shaders } from "./utils/shaders";
 import { Constants } from "./utils/constants";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -11,7 +12,7 @@ let camera: THREE.PerspectiveCamera,
   controls: OrbitControls,
   object: THREE.Object3D;
 
-// Define variables related to post-processing, i.e. depth-mapping.
+// Define variables related to post-processing, pos.e. depth-mapping.
 let postScene: THREE.Scene,
   postCamera: THREE.Camera,
   postMaterial: THREE.ShaderMaterial,
@@ -77,7 +78,7 @@ const createRenderTarget = () => {
   target.depthTexture.type = type;
 };
 
-const createScene = () => (scene = new THREE.Scene());
+const createScene = (): THREE.Scene => (scene = new THREE.Scene());
 
 const loadObject = () => {
   // Load .obj model!
@@ -131,6 +132,88 @@ const createDepthMap = () => {
   postScene.add(postQuad);
 };
 
+const getVertices = (geometry: THREE.BufferGeometry): THREE.Vector3[] => {
+  const vertices: THREE.Vector3[] = [];
+
+  if (!geometry.attributes.position)
+    throw new Error("The geometry does not have a position attribute.");
+
+  const positions = geometry.attributes.position;
+
+  for (let pos = 0; pos < positions.count; pos++) {
+    const x = positions.getX(pos);
+    const y = positions.getY(pos);
+    const z = positions.getZ(pos);
+
+    const vector: THREE.Vector3 = new THREE.Vector3(x, y, z);
+    vertices.push(vector);
+  }
+
+  return vertices;
+};
+
+const isVertexVisible = (
+  worldVertex: THREE.Vector3,
+  meshNode: THREE.Mesh
+): boolean => {
+  const direction = worldVertex.clone().sub(camera.position).normalize();
+
+  const raycaster = new THREE.Raycaster(camera.position, direction);
+  raycaster.params.Mesh.threshold = 0.1;
+
+  const intersections = raycaster.intersectObjects(scene.children, true);
+
+  if (intersections.length === 0) return true;
+
+  const distanceToVertex: number = worldVertex.distanceTo(camera.position);
+  const distanceToClosestIntersection: number = intersections[0].distance;
+
+  if (intersections[0].object === meshNode)
+    return (
+      intersections.length < 2 || intersections[1].distance > distanceToVertex
+    );
+
+  return distanceToClosestIntersection > distanceToVertex;
+};
+
+const parseDepthInformationToJSON = (): string => {
+  let depthData: Depth[] | null = null;
+
+  object.traverse((node) => {
+    if (!(node instanceof THREE.Mesh)) return;
+
+    const geometry: THREE.BufferGeometry = node.geometry;
+    const vertices = getVertices(geometry);
+
+    depthData = vertices.map((vertex): Depth => {
+      const worldVertex = vertex.clone().applyMatrix4(node.matrixWorld);
+      const isVisible = isVertexVisible(worldVertex, node);
+
+      return {
+        x: worldVertex.x,
+        y: worldVertex.y,
+        z: worldVertex.z,
+        isVertexVisible: isVisible,
+      };
+    });
+  });
+
+  return JSON.stringify(depthData ?? {}, null, 4);
+};
+
+const downloadJSON = (data: string, filename?: string) => {
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "data.json";
+
+  a.click();
+  URL.revokeObjectURL(url);
+  a.remove();
+};
+
 const animate = () => {
   if (!supportsExtension) return;
 
@@ -157,6 +240,11 @@ const onWindowResize = () => {
   target?.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
   renderer.setSize(window.innerWidth, window.innerHeight);
 };
+
+document.getElementById("export-json-btn")?.addEventListener("click", () => {
+  const depthDataAsJSON: string = parseDepthInformationToJSON();
+  downloadJSON(depthDataAsJSON);
+});
 
 initialise();
 animate();
