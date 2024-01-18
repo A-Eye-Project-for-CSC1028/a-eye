@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Depth } from "./models/types";
+import { Depth, Space } from "./models/types";
 import { Shaders } from "./utils/shaders";
 import { Constants } from "./utils/constants";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -176,8 +176,36 @@ const isVertexVisible = (
   return distanceToClosestIntersection > distanceToVertex;
 };
 
+const projectVerticesToScreenSpace = (): THREE.Vector3[] => {
+  let tempVertices: THREE.Vector3[] = [];
+
+  object.traverse((node) => {
+    if (!(node instanceof THREE.Mesh)) return;
+
+    const geometry: THREE.BufferGeometry = node.geometry;
+    const width: number = renderer.getContext().canvas.width;
+    const height: number = renderer.getContext().canvas.height;
+
+    const vertices = getVertices(geometry);
+    const widthHalf: number = 0.5 * width;
+    const heightHalf: number = 0.5 * height;
+
+    tempVertices = vertices.map((vertex): THREE.Vector3 => {
+      const projectedVertex = vertex.clone().project(camera);
+
+      // Convert projectedVertex to pixel space...
+      projectedVertex.x = projectedVertex.x * widthHalf + widthHalf;
+      projectedVertex.y = -(projectedVertex.y * heightHalf) + heightHalf;
+      return projectedVertex;
+    });
+  });
+
+  return tempVertices;
+};
+
 const parseDepthInformationToJSON = (): string => {
-  let depthData: Depth[] | null = null;
+  let screenSpaceData: Depth[] | null = null;
+  let worldDepthData: Depth[] | null = null;
 
   object.traverse((node) => {
     if (!(node instanceof THREE.Mesh)) return;
@@ -185,7 +213,13 @@ const parseDepthInformationToJSON = (): string => {
     const geometry: THREE.BufferGeometry = node.geometry;
     const vertices = getVertices(geometry);
 
-    depthData = vertices.map((vertex): Depth => {
+    const screenSpaceVertices: THREE.Vector3[] = projectVerticesToScreenSpace();
+    screenSpaceData = screenSpaceVertices.map((vertex): Depth => {
+      const isVisible = isVertexVisible(vertex, node);
+      return { x: vertex.x, y: vertex.y, isVertexVisible: isVisible };
+    });
+
+    worldDepthData = vertices.map((vertex): Depth => {
       const worldVertex = vertex.clone().applyMatrix4(node.matrixWorld);
       const isVisible = isVertexVisible(worldVertex, node);
 
@@ -198,7 +232,13 @@ const parseDepthInformationToJSON = (): string => {
     });
   });
 
-  return JSON.stringify(depthData ?? {}, null, 4);
+  // Parse into Space model, which contains both 2D & 3D data.
+  const data: Space = {
+    screenSpace: screenSpaceData ?? undefined,
+    worldSpace: worldDepthData ?? undefined,
+  };
+
+  return JSON.stringify(data, null, 4);
 };
 
 const downloadJSON = (data: string, filename?: string) => {
