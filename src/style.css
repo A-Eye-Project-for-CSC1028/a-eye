@@ -1,14 +1,21 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: "Space Grotesk", sans-serif;
   overflow: hidden;
 }
 
-/* Place "Export JSON" button top-left, slightly away from edges. */
-#export-json-btn {
+main {
   position: absolute;
   z-index: 9999;
-  top: 1em;
-  left: 1em;
+  width: 100%;
+  padding: 1em;
+  display: flex;
+  justify-content: space-between;
+  color: aliceblue;
+}
+
+main button {
   cursor: pointer;
+  margin-right: 2em;
 }
