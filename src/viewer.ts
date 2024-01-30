@@ -16,7 +16,7 @@ export class Viewer {
   private renderer: THREE.WebGLRenderer;
   private controls!: OrbitControls;
   private object?: THREE.Object3D;
-  private initialCameraPosition!: THREE.Vector3;
+  // private initialCameraPosition!: THREE.Vector3;
 
   // Post-Processing
   private postScene!: THREE.Scene;
@@ -57,7 +57,7 @@ export class Viewer {
     document.body.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 150);
-    this.initialCameraPosition = this.camera.position; // Save initial camera position for usage with auto-positioning later!
+    // this.initialCameraPosition = this.camera.position; // Save initial camera position for usage with auto-positioning later!
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
