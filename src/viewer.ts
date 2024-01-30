@@ -24,14 +24,24 @@ export class Viewer {
   private postMaterial!: THREE.ShaderMaterial;
   private target!: THREE.WebGLRenderTarget | null;
 
+  // Lighting
+  private ambientLightId?: number;
+  private directionalLightId?: number;
+
   // Status
   private supportsExtension: boolean = true;
+  private useDepthShader: boolean = false;
+
+  // Camera Positioning
+  public lateralCameraPosition: Direction = Direction.CENTER;
+  public cameraElevation: Elevation = Elevation.MIDDLE;
+  public cameraDistance: Distance = Distance.REGULAR;
 
   constructor() {
     const width: number = window.innerWidth;
     const height: number = window.innerHeight;
 
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
 
     if (
       this.renderer.capabilities.isWebGL2 === false &&
@@ -46,7 +56,7 @@ export class Viewer {
     this.renderer.setSize(width, height);
     document.body.appendChild(this.renderer.domElement);
 
-    this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 50);
+    this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 150);
     this.initialCameraPosition = this.camera.position; // Save initial camera position for usage with auto-positioning later!
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -60,6 +70,7 @@ export class Viewer {
     this.scene = new THREE.Scene();
 
     this.loadObject();
+    this.setupLights();
     this.createDepthMap();
 
     this.onWindowResize();
@@ -76,71 +87,24 @@ export class Viewer {
     this.renderer.setRenderTarget(this.target);
     this.renderer.render(this.scene, this.camera);
 
-    this.postMaterial.uniforms.tDiffuse.value = this.target?.texture;
-    this.postMaterial.uniforms.tDepth.value = this.target?.depthTexture;
+    if (this.useDepthShader) {
+      this.hideObjectById(this.ambientLightId);
+      this.hideObjectById(this.directionalLightId);
 
-    this.renderer.setRenderTarget(null);
-    this.renderer.render(this.postScene, this.postCamera);
+      this.postMaterial.uniforms.tDiffuse.value = this.target?.texture;
+      this.postMaterial.uniforms.tDepth.value = this.target?.depthTexture;
+
+      this.renderer.setRenderTarget(null);
+      this.renderer.render(this.postScene, this.postCamera);
+    } else {
+      this.showObjectById(this.ambientLightId);
+      this.showObjectById(this.directionalLightId);
+
+      this.renderer.setRenderTarget(null);
+      this.renderer.render(this.scene, this.camera);
+    }
 
     this.controls.update();
-  };
-
-  // TODO
-  public updateCameraPosition = (
-    direction: Direction,
-    elevation: Elevation,
-    distance: Distance
-  ) => {
-    const x = this.initialCameraPosition.x;
-    const y = this.initialCameraPosition.y;
-    const z = this.initialCameraPosition.z;
-
-    switch (direction) {
-      case Direction.LEFT:
-        // Move camera to pre-set position on the left.
-        this.camera.position.setX(x * 0.9379);
-        break;
-      case Direction.RIGHT:
-        // Move camera to pre-set position on the right.
-        this.camera.position.setX(x * 1.0621);
-        break;
-    }
-
-    switch (elevation) {
-      case Elevation.TOP:
-        this.camera.position.setY(y * 4.2092);
-        this.camera.position.setZ(z * 1.3012);
-        break;
-
-      // TODO
-      case Elevation.MIDDLE_TOP:
-        break;
-
-      case Elevation.MIDDLE:
-        this.camera.position.setZ(z * 0.9064);
-        break;
-
-      // TODO
-      case Elevation.MIDDLE_BOTTOM:
-        break;
-
-      case Elevation.BOTTOM:
-        this.camera.position.setY(y * -0.5648);
-        this.camera.position.setZ(z * 1.0383);
-        break;
-    }
-
-    // TODO
-    switch (distance) {
-      case Distance.CLOSE:
-        break;
-
-      case Distance.REGULAR:
-        break;
-
-      case Distance.FAR:
-        break;
-    }
   };
 
   public updateCameraPositionDisplay = () => {
@@ -152,6 +116,24 @@ export class Viewer {
         2
       )}, z: ${this.camera.position.z.toFixed(2)}`;
     }
+  };
+
+  private showObjectById = (id?: number) => {
+    if (id === undefined) return;
+
+    const objectToHide: THREE.Object3D | undefined =
+      this.scene.getObjectById(id);
+
+    if (objectToHide) objectToHide.visible = true;
+  };
+
+  private hideObjectById = (id?: number) => {
+    if (id === undefined) return;
+
+    const objectToHide: THREE.Object3D | undefined =
+      this.scene.getObjectById(id);
+
+    if (objectToHide) objectToHide.visible = false;
   };
 
   public parseDepthInformationToJSON = (): string => {
@@ -199,6 +181,8 @@ export class Viewer {
 
     return JSON.stringify(data, null, 2);
   };
+
+  public toggleDepthMap = () => (this.useDepthShader = !this.useDepthShader);
 
   private createRenderTarget = () => {
     const width: number = window.innerWidth;
@@ -271,6 +255,17 @@ export class Viewer {
     this.postScene = new THREE.Scene();
 
     this.postScene.add(postQuad);
+  };
+
+  private setupLights = () => {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    this.ambientLightId = ambientLight.id;
+    this.scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 10);
+    this.directionalLightId = directionalLight.id;
+    this.scene.add(directionalLight);
   };
 
   private getVertices = (geometry: THREE.BufferGeometry): THREE.Vector3[] => {

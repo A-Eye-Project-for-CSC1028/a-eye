@@ -1,7 +1,7 @@
 export enum Elevation {
-  TOP,
-  MIDDLE_TOP,
-  MIDDLE,
-  MIDDLE_BOTTOM,
-  BOTTOM,
+  TOP = "top",
+  MIDDLE_TOP = "middle-top",
+  MIDDLE = "middle",
+  MIDDLE_BOTTOM = "middle-bottom",
+  BOTTOM = "bottom",
 }

@@ -8,4 +8,8 @@ document.getElementById("export-json-btn")?.addEventListener("click", () => {
   Exporter.downloadJSON(depthDataAsJSON);
 });
 
+document
+  .getElementById("toggle-depth-map-btn")
+  ?.addEventListener("click", () => viewer.toggleDepthMap());
+
 viewer.animate();

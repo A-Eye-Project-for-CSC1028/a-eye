@@ -1,3 +1,4 @@
+/* Global Settings */
 body {
   margin: 0;
   padding: 0;
@@ -5,17 +6,30 @@ body {
   overflow: hidden;
 }
 
+/* Control area above ThreeJS */
 main {
   position: absolute;
   z-index: 9999;
   width: 100%;
-  padding: 1em;
-  display: flex;
-  justify-content: space-between;
   color: aliceblue;
 }
 
-main button {
+button {
   cursor: pointer;
-  margin-right: 2em;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Generic: Container */
+.container {
+  padding: 0.75em;
+}
+
+/* Camera Controls' <fieldset> */
+.camera-controls {
+  border: 0;
+  display: flex;
 }

@@ -1,5 +1,5 @@
 export enum Distance {
-  FAR,
-  REGULAR,
-  CLOSE,
+  FAR = "far",
+  REGULAR = "regular",
+  CLOSE = "close",
 }

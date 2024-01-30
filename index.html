@@ -16,8 +16,13 @@
   <body>
     <!-- Contains controls, such as buttons that trigger important functions. -->
     <main>
-      <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
-      <button id="export-json-btn">Export JSON</button>
+      <header>
+        <div class="container">
+          <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
+          <button id="export-json-btn">Export JSON</button>
+          <button id="toggle-depth-map-btn">Toggle Depth Map</button>
+        </div>
+      </header>
     </main>
     <!-- Render ThreeJS <canvas> in below div, so that other things can go on top. -->
     <div id="three" />
