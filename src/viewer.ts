@@ -8,6 +8,7 @@ import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Shaders } from "./utils/shaders";
 import { Depth, Space } from "./models/types";
 import { Converter } from "./utils/converter";
+import { Exporter } from "./utils/exporter";
 
 export class Viewer {
   // Unprocessed
@@ -31,6 +32,7 @@ export class Viewer {
   // Status
   private supportsExtension: boolean = true;
   private useDepthShader: boolean = false;
+  private isTakingCapture: boolean = false;
 
   // Camera Positioning
   public lateralCameraPosition: Direction = Direction.CENTER;
@@ -41,7 +43,10 @@ export class Viewer {
     const width: number = window.innerWidth;
     const height: number = window.innerHeight;
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true,
+    });
 
     if (
       this.renderer.capabilities.isWebGL2 === false &&
@@ -68,6 +73,7 @@ export class Viewer {
     // Handle model rendering & depth mapping.
     this.createRenderTarget();
     this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x00ff00);
 
     this.loadObject();
     this.setupLights();
@@ -104,6 +110,11 @@ export class Viewer {
       this.renderer.render(this.scene, this.camera);
     }
 
+    if (this.isTakingCapture) {
+      const imgDataUrl = this.capture();
+      Exporter.download(imgDataUrl, "image/png", "scene.png");
+    }
+
     this.controls.update();
   };
 
@@ -118,25 +129,7 @@ export class Viewer {
     }
   };
 
-  private showObjectById = (id?: number) => {
-    if (id === undefined) return;
-
-    const objectToHide: THREE.Object3D | undefined =
-      this.scene.getObjectById(id);
-
-    if (objectToHide) objectToHide.visible = true;
-  };
-
-  private hideObjectById = (id?: number) => {
-    if (id === undefined) return;
-
-    const objectToHide: THREE.Object3D | undefined =
-      this.scene.getObjectById(id);
-
-    if (objectToHide) objectToHide.visible = false;
-  };
-
-  public parseDepthInformationToJSON = (): string => {
+  public downloadDepthInformationAsJSON = () => {
     let screenSpaceData: Depth[] | null = null;
     let worldDepthData: Depth[] | null = null;
 
@@ -179,10 +172,48 @@ export class Viewer {
       worldSpace: worldDepthData ?? undefined,
     };
 
-    return JSON.stringify(data, null, 2);
+    // Download the JSON!
+    Exporter.download(
+      JSON.stringify(data, null, 2),
+      "application/json",
+      "data.json"
+    );
   };
 
-  public toggleDepthMap = () => (this.useDepthShader = !this.useDepthShader);
+  public toggleDepthMap = () => {
+    this.useDepthShader = !this.useDepthShader;
+  };
+
+  public captureScene = () => {
+    this.isTakingCapture = true;
+  };
+
+  private capture = (): string => {
+    const canvas = document.querySelector("canvas");
+    const dataUrl: string = canvas!.toDataURL("image/png");
+
+    this.isTakingCapture = false;
+
+    return dataUrl;
+  };
+
+  private showObjectById = (id?: number) => {
+    if (id === undefined) return;
+
+    const objectToHide: THREE.Object3D | undefined =
+      this.scene.getObjectById(id);
+
+    if (objectToHide) objectToHide.visible = true;
+  };
+
+  private hideObjectById = (id?: number) => {
+    if (id === undefined) return;
+
+    const objectToHide: THREE.Object3D | undefined =
+      this.scene.getObjectById(id);
+
+    if (objectToHide) objectToHide.visible = false;
+  };
 
   private createRenderTarget = () => {
     const width: number = window.innerWidth;
