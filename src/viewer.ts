@@ -180,6 +180,11 @@ export class Viewer {
     );
   };
 
+  public loadNewObject = (url: string) => {
+    this.removeOldObjectFromScene();
+    this.loadObject(url);
+  };
+
   public toggleDepthMap = () => {
     this.useDepthShader = !this.useDepthShader;
   };
@@ -236,11 +241,34 @@ export class Viewer {
     this.target.depthTexture.type = type;
   };
 
-  private loadObject = () => {
+  private removeOldObjectFromScene() {
+    if (this.object) {
+      this.scene.remove(this.object);
+      this.object.traverse((child) => {
+        const mesh: THREE.Mesh = child as THREE.Mesh;
+
+        if (mesh.isMesh) {
+          if (mesh.geometry) mesh.geometry.dispose();
+
+          if (mesh.material) {
+            const material = mesh.material;
+
+            if (Array.isArray(material))
+              material.forEach((mat) => mat.dispose());
+            else material.dispose();
+          }
+        }
+      });
+
+      this.object = undefined;
+    }
+  }
+
+  private loadObject = (url: string = "/models/sofa.obj") => {
     // Load .obj model!
     const loader = new OBJLoader();
     loader.load(
-      "/models/sofa.obj",
+      url,
       (obj: THREE.Object3D) => {
         this.object = obj;
         this.scene.add(this.object);

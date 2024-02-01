@@ -19,11 +19,19 @@
       <header>
         <div class="container">
           <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
-          <button id="export-json-btn">Export JSON</button>
-          <button id="toggle-depth-map-btn">Toggle Depth Map</button>
-          <button id="render-image-btn">Render Image</button>
+          <div class="main-buttons">
+            <button id="export-json-btn">Export JSON</button>
+            <button id="toggle-depth-map-btn">Toggle Depth Map</button>
+            <button id="render-image-btn">Render Image</button>
+          </div>
         </div>
       </header>
+      <footer>
+        <div class="container">
+          <button id="upload-btn">Select Model</button>
+          <input type="file" id="upload-obj-file" accept=".obj" />
+        </div>
+      </footer>
     </main>
     <!-- Render ThreeJS <canvas> in below div, so that other things can go on top. -->
     <div id="three" />
