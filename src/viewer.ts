@@ -240,7 +240,7 @@ export class Viewer {
     // Load .obj model!
     const loader = new OBJLoader();
     loader.load(
-      "/models/white-couch/86.obj",
+      "/models/sofa.obj",
       (obj: THREE.Object3D) => {
         this.object = obj;
         this.scene.add(this.object);
