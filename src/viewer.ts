@@ -6,7 +6,7 @@ import { Direction } from "./enums/direction";
 import { Distance } from "./enums/distance";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Shaders } from "./utils/shaders";
-import { Depth, Space } from "./models/types";
+import { Depth, SceneMetadata, Space } from "./models/types";
 import { Converter } from "./utils/converter";
 import { Exporter } from "./utils/exporter";
 
@@ -162,7 +162,7 @@ export class Viewer {
     });
 
     // Parse into Space model, which contains both 2D & 3D data.
-    const data: Space = {
+    const spaceData: Space = {
       cameraPosition: new THREE.Vector3(
         this.camera.position.x,
         this.camera.position.y,
@@ -170,6 +170,12 @@ export class Viewer {
       ),
       screenSpace: screenSpaceData ?? undefined,
       worldSpace: worldDepthData ?? undefined,
+    };
+
+    // Parse all required data into a SceneMetadata object for exportation.
+    const data: SceneMetadata = {
+      canvasSize: this.getCanvasDimensions(),
+      space: spaceData,
     };
 
     // Download the JSON!
@@ -380,12 +386,11 @@ export class Viewer {
       if (!(node instanceof THREE.Mesh)) return;
 
       const geometry: THREE.BufferGeometry = node.geometry;
-      const width: number = this.renderer.getContext().canvas.width;
-      const height: number = this.renderer.getContext().canvas.height;
-
       const vertices = this.getVertices(geometry);
-      const widthHalf: number = 0.5 * width;
-      const heightHalf: number = 0.5 * height;
+
+      const canvasDimensions: THREE.Vector2 = this.getCanvasDimensions();
+      const widthHalf: number = 0.5 * canvasDimensions.width;
+      const heightHalf: number = 0.5 * canvasDimensions.height;
 
       tempVertices = vertices.map((vertex): THREE.Vector3 => {
         const projectedVertex = vertex.clone().project(this.camera);
@@ -398,6 +403,14 @@ export class Viewer {
     });
 
     return tempVertices;
+  };
+
+  private getCanvasDimensions = () => {
+    const canvas = document.querySelector("canvas");
+    const width: number = canvas!.clientWidth;
+    const height: number = canvas!.clientHeight;
+
+    return new THREE.Vector2(width, height);
   };
 
   private onWindowResize = () => {

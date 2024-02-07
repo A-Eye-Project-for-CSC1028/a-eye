@@ -10,3 +10,8 @@ export interface Space {
   screenSpace?: Depth;
   worldSpace?: Depth;
 }
+
+export interface SceneMetadata {
+  canvasSize: Vector2;
+  space: Space;
+}
