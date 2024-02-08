@@ -140,7 +140,7 @@ export class Viewer {
       const vertices = this.getVertices(geometry);
 
       const screenSpaceVertices: THREE.Vector3[] =
-        this.projectVerticesToScreenSpace();
+        this.projectVerticesToScreenSpace(this.getScreenSpaceDimensions());
 
       screenSpaceData = screenSpaceVertices.map((vertex): Depth => {
         const isVisible = this.isVertexVisible(vertex, node);
@@ -174,7 +174,7 @@ export class Viewer {
 
     // Parse all required data into a SceneMetadata object for exportation.
     const data: SceneMetadata = {
-      canvasSize: this.getCanvasDimensions(),
+      canvasSize: this.getScreenSpaceDimensions(),
       space: spaceData,
     };
 
@@ -379,7 +379,9 @@ export class Viewer {
     return distanceToClosestIntersection > distanceToVertex;
   };
 
-  private projectVerticesToScreenSpace = (): THREE.Vector3[] => {
+  private projectVerticesToScreenSpace = (
+    canvasDimensions: THREE.Vector2
+  ): THREE.Vector3[] => {
     let tempVertices: THREE.Vector3[] = [];
 
     this.object!.traverse((node: unknown) => {
@@ -388,7 +390,6 @@ export class Viewer {
       const geometry: THREE.BufferGeometry = node.geometry;
       const vertices = this.getVertices(geometry);
 
-      const canvasDimensions: THREE.Vector2 = this.getCanvasDimensions();
       const widthHalf: number = 0.5 * canvasDimensions.width;
       const heightHalf: number = 0.5 * canvasDimensions.height;
 
@@ -405,10 +406,35 @@ export class Viewer {
     return tempVertices;
   };
 
-  private getCanvasDimensions = () => {
-    const canvas = document.querySelector("canvas");
-    const width: number = canvas!.clientWidth;
-    const height: number = canvas!.clientHeight;
+  private getScreenSpaceDimensions = () => {
+    const needToScale = (
+      document.getElementById("should-scale-screen-space") as HTMLInputElement
+    ).checked;
+
+    let width: number, height: number;
+
+    switch (needToScale) {
+      case true:
+        const xInput: HTMLInputElement = document.getElementById(
+          "scale-screen-space-x"
+        ) as HTMLInputElement;
+
+        const yInput: HTMLInputElement = document.getElementById(
+          "scale-screen-space-y"
+        ) as HTMLInputElement;
+
+        width = parseInt(xInput.value);
+        height = parseInt(yInput.value);
+
+        break;
+
+      case false:
+        const canvas = document.querySelector("canvas");
+        width = canvas!.clientWidth;
+        height = canvas!.clientHeight;
+
+        break;
+    }
 
     return new THREE.Vector2(width, height);
   };

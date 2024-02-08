@@ -20,6 +20,12 @@ main {
   color: aliceblue;
 }
 
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Allow items within <main> to still receive click/touch input. */
 main * {
   pointer-events: auto;
@@ -40,6 +46,11 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 0.25em;
+}
+
+#scale-screen-space-x,
+#scale-screen-space-y {
+  width: 15%;
 }
 
 #upload-obj-file {

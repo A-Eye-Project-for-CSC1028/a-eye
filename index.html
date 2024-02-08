@@ -18,7 +18,25 @@
     <main>
       <header>
         <div class="container">
-          <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
+          <div class="main-buttons">
+            <label for="should-scale-screen-space">Scale Screen Space?</label>
+            <input type="checkbox" id="should-scale-screen-space" />
+            <!-- x & y: Scale screen space data to specified screen size. -->
+            <div class="container">
+              <input
+                type="number"
+                id="scale-screen-space-x"
+                min="0"
+                value="512"
+              />
+              <input
+                type="number"
+                id="scale-screen-space-y"
+                min="0"
+                value="512"
+              />
+            </div>
+          </div>
           <div class="main-buttons">
             <button id="export-json-btn">Export JSON</button>
             <button id="toggle-depth-map-btn">Toggle Depth Map</button>
@@ -26,11 +44,12 @@
           </div>
         </div>
       </header>
-      <footer>
+      <footer class="container">
         <div class="container">
           <button id="upload-btn">Select Model</button>
           <input type="file" id="upload-obj-file" accept=".obj" />
         </div>
+        <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
       </footer>
     </main>
     <!-- Render ThreeJS <canvas> in below div, so that other things can go on top. -->
