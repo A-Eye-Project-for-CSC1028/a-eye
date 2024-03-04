@@ -62,6 +62,7 @@ export class Viewer {
     document.body.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 150);
+
     // this.initialCameraPosition = this.camera.position; // Save initial camera position for usage with auto-positioning later!
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -127,6 +128,21 @@ export class Viewer {
         2
       )}, z: ${this.camera.position.z.toFixed(2)}`;
     }
+  };
+
+  public updateFov = (fov: number) => {
+    this.camera.fov = fov;
+    this.camera.updateProjectionMatrix();
+  };
+
+  public updateNear = (near: number) => {
+    this.camera.near = near;
+    this.camera.updateProjectionMatrix();
+  };
+
+  public updateFar = (far: number) => {
+    this.camera.far = far;
+    this.camera.updateProjectionMatrix();
   };
 
   public downloadDepthInformationAsJSON = () => {

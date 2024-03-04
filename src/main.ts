@@ -37,6 +37,24 @@ fileInput!.addEventListener("change", (event) => {
   }
 });
 
+const fovInput = document.getElementById("camera-fov");
+fovInput!.addEventListener("change", (event) => {
+  const input = event.target as HTMLInputElement;
+  viewer.updateFov(parseFloat(input.value));
+});
+
+const nearInput = document.getElementById("camera-near");
+nearInput!.addEventListener("change", (event) => {
+  const input = event.target as HTMLInputElement;
+  viewer.updateNear(parseFloat(input.value));
+});
+
+const farInput = document.getElementById("camera-far");
+farInput!.addEventListener("change", (event) => {
+  const input = event.target as HTMLInputElement;
+  viewer.updateFar(parseFloat(input.value));
+});
+
 // Render object!
 viewer.animate();
 

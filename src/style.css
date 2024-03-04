@@ -1,4 +1,3 @@
-/* Global Settings */
 body {
   margin: 0;
   padding: 0;
@@ -6,24 +5,23 @@ body {
   overflow: hidden;
 }
 
-/* Control area above ThreeJS */
+/* Styling for the control area above the Three.js visualisation */
 main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: start;
   position: absolute;
-  z-index: 9999;
+  z-index: 9999; /* Ensure it's above other content */
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  color: aliceblue;
+  pointer-events: none; /* Disable pointer events for the area */
+  color: aliceblue; /* Light blue text color for better readability */
 }
 
 footer {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 /* Allow items within <main> to still receive click/touch input. */
@@ -35,24 +33,59 @@ button {
   cursor: pointer;
 }
 
-/* Generic: Container */
+/* Generic padded container... */
 .container {
   padding: 0.75em;
 }
 
-/* Centralise and pad main button controls within their container. */
-.main-buttons {
+#upload-obj-file {
+  display: none;
+}
+
+/* Section styling for data exfiltration settings. */
+.data-exfiltration-settings {
+  display: flex;
+  flex-direction: column;
+  border: none;
+}
+
+/* Flex container for toggle and input elements, ensuring alignment and spacing. */
+.toggle-container,
+.input-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  margin: 0.25em 0;
+}
+
+/* Styling for number input fields. */
+input[type="number"] {
+  width: 4em;
   padding: 0.25em;
 }
 
-#scale-screen-space-x,
-#scale-screen-space-y {
-  width: 15%;
+/* Adjust spacing for checkbox inputs. */
+input[type="checkbox"] {
+  margin-left: 0.5em;
 }
 
-#upload-obj-file {
-  display: none;
+/* Flex container for data-related buttons (export, render, etc.) */
+.data-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add spacing between buttons within the .data-buttons container. */
+.container.data-buttons button {
+  margin: 0 5px;
+}
+
+.container.data-buttons button:first-child {
+  margin-left: 0;
+}
+
+.container.data-buttons button:last-child {
+  margin-right: 0;
 }

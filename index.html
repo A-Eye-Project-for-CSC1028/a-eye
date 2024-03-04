@@ -11,24 +11,31 @@
       rel="stylesheet"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>a-Eye | 👁️</title>
+    <title>a-eye | object viewer</title>
   </head>
   <body>
-    <!-- Contains controls, such as buttons that trigger important functions. -->
     <main>
       <header>
         <div class="container">
-          <div class="main-buttons">
-            <label for="should-scale-screen-space">Scale Screen Space?</label>
-            <input type="checkbox" id="should-scale-screen-space" />
-            <!-- x & y: Scale screen space data to specified screen size. -->
-            <div class="container">
+          <!-- Top Left: Screen Scaling; Data Exfiltration Buttons; FOV, Near, & Far. -->
+          <fieldset class="data-exfiltration-settings">
+            <div class="toggle-container">
+              <label for="should-scale-screen-space"
+                >Enable Screen Scaling?</label
+              >
+              <input type="checkbox" id="should-scale-screen-space" checked />
+            </div>
+            <div class="input-container">
+              <label for="scale-screen-space-x">Width (px):</label>
               <input
                 type="number"
                 id="scale-screen-space-x"
                 min="0"
                 value="512"
               />
+            </div>
+            <div class="input-container">
+              <label for="scale-screen-space-y">Height (px):</label>
               <input
                 type="number"
                 id="scale-screen-space-y"
@@ -36,19 +43,36 @@
                 value="512"
               />
             </div>
-          </div>
-          <div class="main-buttons">
+            <div class="input-container">
+              <label for="camera-fov">Camera FOV:</label>
+              <input type="number" id="camera-fov" min="0" value="70" />
+            </div>
+            <div class="input-container">
+              <label for="camera-near">Camera Near:</label>
+              <input
+                type="number"
+                id="camera-near"
+                min="0"
+                value="0.1"
+                step="0.05"
+              />
+            </div>
+            <div class="input-container">
+              <label for="camera-far">Camera Far:</label>
+              <input type="number" id="camera-far" min="0" value="150" />
+            </div>
+          </fieldset>
+          <div class="container data-buttons">
             <button id="export-json-btn">Export JSON</button>
             <button id="toggle-depth-map-btn">Toggle Depth Map</button>
             <button id="render-image-btn">Render Image</button>
           </div>
         </div>
       </header>
+      <!-- Bottom Left: Model Upload & Camera Position -->
       <footer class="container">
-        <div class="container">
-          <button id="upload-btn">Select Model</button>
-          <input type="file" id="upload-obj-file" accept=".obj" />
-        </div>
+        <button id="upload-btn">Select Model</button>
+        <input type="file" id="upload-obj-file" accept=".obj" />
         <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
       </footer>
     </main>
