@@ -1,9 +1,11 @@
+import { Constants } from "./utils/constants";
 import { Viewer } from "./viewer";
 
 const viewer = new Viewer();
 
 let modelObjectUrl: string | null = null;
 
+/* Data Buttons & Camera Manipulation */
 document
   .getElementById("export-json-btn")
   ?.addEventListener("click", () => viewer.downloadDepthInformationAsJSON());
@@ -54,6 +56,9 @@ farInput!.addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
   viewer.updateFar(parseFloat(input.value));
 });
+
+/* Object Registry Dropdown */
+Constants.populateModelsDropdown();
 
 // Render object!
 viewer.animate();

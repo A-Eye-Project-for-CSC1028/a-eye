@@ -16,8 +16,12 @@
   <body>
     <main>
       <header>
-        <div class="container">
-          <!-- Top Left: Screen Scaling; Data Exfiltration Buttons; FOV, Near, & Far. -->
+        <!-- Top Left: Camera Position; Model Selector. -->
+        <div class="container" id="top-left">
+          <div id="camera-position">x: 0, y: 0, z: 0</div>
+        </div>
+        <!-- Top Right: Screen Scaling; Data Exfiltration Buttons; FOV, Near, & Far. -->
+        <div id="top-right">
           <fieldset class="data-exfiltration-settings">
             <div class="toggle-container">
               <label for="should-scale-screen-space"
@@ -61,20 +65,24 @@
               <label for="camera-far">Camera Far:</label>
               <input type="number" id="camera-far" min="0" value="150" />
             </div>
+            <div class="input-container vertical-spacer">
+              <label for="models">Selected Model:</label>
+              <select id="models" name="models"></select>
+            </div>
           </fieldset>
           <div class="container data-buttons">
-            <button id="export-json-btn">Export JSON</button>
-            <button id="toggle-depth-map-btn">Toggle Depth Map</button>
-            <button id="render-image-btn">Render Image</button>
+            <div class="vertical-spacer">
+              <button id="export-json-btn">Export JSON</button>
+              <button id="toggle-depth-map-btn">Toggle Depth Map</button>
+              <button id="render-image-btn">Render Image</button>
+            </div>
+            <div class="vertical-spacer">
+              <button id="upload-btn">Select Model</button>
+              <input type="file" id="upload-obj-file" accept=".obj" />
+            </div>
           </div>
         </div>
       </header>
-      <!-- Bottom Left: Model Upload & Camera Position -->
-      <footer class="container">
-        <button id="upload-btn">Select Model</button>
-        <input type="file" id="upload-obj-file" accept=".obj" />
-        <div id="camera-position">Camera Position: x: 0, y: 0, z: 0</div>
-      </footer>
     </main>
     <!-- Render ThreeJS <canvas> in below div, so that other things can go on top. -->
     <div id="three" />

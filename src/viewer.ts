@@ -122,7 +122,7 @@ export class Viewer {
   public updateCameraPositionDisplay = () => {
     const cameraPosElement = document.getElementById("camera-position");
     if (cameraPosElement) {
-      cameraPosElement.textContent = `Camera Position: x: ${this.camera.position.x.toFixed(
+      cameraPosElement.textContent = `x: ${this.camera.position.x.toFixed(
         2
       )}, y: ${this.camera.position.y.toFixed(
         2
@@ -286,7 +286,7 @@ export class Viewer {
     }
   }
 
-  private loadObject = (url: string = "/models/sofa.obj") => {
+  private loadObject = (url: string = Constants.objectRegistry.sofa.path) => {
     // Load .obj model!
     const loader = new OBJLoader();
     loader.load(
