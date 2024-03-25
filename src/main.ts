@@ -5,6 +5,9 @@ const viewer = new Viewer();
 
 let modelObjectUrl: string | null = null;
 
+/* Object Registry Dropdown */
+Constants.populateModelsDropdown();
+
 /* Data Buttons & Camera Manipulation */
 document
   .getElementById("export-json-btn")
@@ -18,8 +21,10 @@ document
   .getElementById("render-image-btn")
   ?.addEventListener("click", () => viewer.captureScene());
 
-const uploadBtn = document.getElementById("upload-btn");
-const fileInput = document.getElementById("upload-obj-file");
+const uploadBtn = document.getElementById("upload-btn") as HTMLSelectElement;
+const fileInput = document.getElementById(
+  "upload-obj-file"
+) as HTMLSelectElement;
 
 // Trigger file upload from relevant <input> tag; acts as a proxy for upload.
 uploadBtn!.addEventListener("click", () => fileInput!.click());
@@ -39,26 +44,29 @@ fileInput!.addEventListener("change", (event) => {
   }
 });
 
-const fovInput = document.getElementById("camera-fov");
+const fovInput = document.getElementById("camera-fov") as HTMLSelectElement;
 fovInput!.addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
   viewer.updateFov(parseFloat(input.value));
 });
 
-const nearInput = document.getElementById("camera-near");
+const nearInput = document.getElementById("camera-near") as HTMLSelectElement;
 nearInput!.addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
   viewer.updateNear(parseFloat(input.value));
 });
 
-const farInput = document.getElementById("camera-far");
+const farInput = document.getElementById("camera-far") as HTMLSelectElement;
 farInput!.addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
   viewer.updateFar(parseFloat(input.value));
 });
 
-/* Object Registry Dropdown */
-Constants.populateModelsDropdown();
+const modelSelector = document.getElementById("models") as HTMLSelectElement;
+modelSelector.addEventListener("change", () => {
+  modelObjectUrl = modelSelector.value;
+  viewer.loadNewObject(modelObjectUrl);
+});
 
 // Render object!
 viewer.animate();
