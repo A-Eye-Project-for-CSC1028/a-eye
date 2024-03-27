@@ -1,9 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Constants } from "./utils/constants";
-import { Elevation } from "./enums/elevation";
-import { Direction } from "./enums/direction";
-import { Distance } from "./enums/distance";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Shaders } from "./utils/shaders";
 import { Depth, SceneMetadata, Space } from "./models/types";
@@ -33,11 +30,6 @@ export class Viewer {
   private supportsExtension: boolean = true;
   private useDepthShader: boolean = false;
   private isTakingCapture: boolean = false;
-
-  // Camera Positioning
-  public lateralCameraPosition: Direction = Direction.CENTER;
-  public cameraElevation: Elevation = Elevation.MIDDLE;
-  public cameraDistance: Distance = Distance.REGULAR;
 
   constructor() {
     const width: number = window.innerWidth;
