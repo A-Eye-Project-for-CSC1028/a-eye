@@ -1,12 +1,15 @@
 import * as THREE from "three";
 import { RegistryEntry } from "../models/types";
 
+/**
+ * Contains a wide range of constant values used throughout the codebase.
+ * - `params` & `types`: Three.js render target configuration values.
+ * - `objectRegistry`: Collection of RegistryEntry objects - contains valid object names and their paths.
+ * - `positionRegistry`: List of valid positional keywords.
+ * - `populateModelsDropdown()`: The sole function in this class - used to populate a constant list of bundled objects.
+ */
 export const Constants = {
   params: { format: THREE.DepthFormat, type: THREE.UnsignedShortType },
-  formats: {
-    DepthFormat: THREE.DepthFormat,
-    DepthStencilFormat: THREE.DepthStencilFormat,
-  },
   types: {
     UnsignedShortType: THREE.UnsignedShortType,
     UnsignedIntType: THREE.UnsignedIntType,

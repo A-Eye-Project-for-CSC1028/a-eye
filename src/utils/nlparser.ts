@@ -1,7 +1,15 @@
 import { NLPosition } from "../models/types";
 import { Constants } from "./constants";
 
+/**
+ * 🚧 Attempting to add natural language syntax to allow the user to place supplementary objects elsewhere in a scene.
+ */
 export class NLParser {
+  /**
+   * Extracts object names & positional keywords from a natural language prompt.
+   * @param command The natural language prompt/command to be parsed.
+   * @returns `NLPosition`
+   */
   public static parse = (command: string): NLPosition => {
     let objectName: string | undefined;
     let objectPath: string | undefined;

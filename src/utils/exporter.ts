@@ -1,4 +1,15 @@
+/**
+ * Provides functionality for exporting various data types - including scene renders and
+ * JSON metadata, to downloadable files.
+ */
 export class Exporter {
+  /**
+   * Downloads the provided data as a file, handling image decoding and file type appropriately.
+   *
+   * @param data The actual data you would like to export, as a string.
+   * @param mimeString File type as a MIME string, i.e. image/png
+   * @param fileName Denotes what the name of the file should be after exportation.
+   */
   public static download = (
     data: string,
     mimeString: string,

@@ -1,3 +1,6 @@
+/**
+ * Contains GLSL code for both the vertex & fragments shaders used in the projection of depth maps.
+ */
 export const Shaders = {
   depthMap: {
     vertexShader: `

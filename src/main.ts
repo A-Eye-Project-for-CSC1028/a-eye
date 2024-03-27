@@ -5,10 +5,9 @@ const viewer = new Viewer();
 
 let modelObjectUrl: string | null = null;
 
-/* Object Registry Dropdown */
 Constants.populateModelsDropdown();
 
-/* Data Buttons & Camera Manipulation */
+/* -- Data Buttons -- */
 document
   .getElementById("export-json-btn")
   ?.addEventListener("click", () => viewer.downloadDepthInformationAsJSON());
@@ -44,6 +43,13 @@ fileInput!.addEventListener("change", (event) => {
   }
 });
 
+const modelSelector = document.getElementById("models") as HTMLSelectElement;
+modelSelector.addEventListener("change", () => {
+  modelObjectUrl = modelSelector.value;
+  viewer.loadNewObject(modelObjectUrl);
+});
+
+/* -- Camera Manipulation -- */
 const fovInput = document.getElementById("camera-fov") as HTMLSelectElement;
 fovInput!.addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
@@ -62,16 +68,10 @@ farInput!.addEventListener("change", (event) => {
   viewer.updateFar(parseFloat(input.value));
 });
 
-const modelSelector = document.getElementById("models") as HTMLSelectElement;
-modelSelector.addEventListener("change", () => {
-  modelObjectUrl = modelSelector.value;
-  viewer.loadNewObject(modelObjectUrl);
-});
-
 // Render object!
 viewer.animate();
 
-// Clean up uploaded .obj file if required.
+// Clean up uploaded .obj file link if required.
 window.onbeforeunload = () => {
   if (modelObjectUrl) URL.revokeObjectURL(modelObjectUrl);
 };

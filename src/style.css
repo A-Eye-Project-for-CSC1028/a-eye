@@ -1,13 +1,16 @@
+/* Globals - Font Family */
 * {
   font-family: "Space Grotesk", sans-serif;
 }
 
+/* Remove any excess whitespace/padding from around body. */
 body {
   margin: 0;
   padding: 0;
   overflow: hidden;
 }
 
+/* (1/2) Position items in <main> and place it above all other tags, still allowing click-through. */
 main {
   display: flex;
   flex-direction: column;
@@ -21,6 +24,7 @@ main {
   color: aliceblue;
 }
 
+/* (2/2) */
 main header * {
   pointer-events: all;
 }
@@ -32,18 +36,42 @@ header {
   justify-content: space-between;
 }
 
+/* Error message for if browser is unsupported - red text and background. */
+#error {
+  display: none;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: 15px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+/* General Styles */
 button {
   cursor: pointer;
+}
+
+button,
+input {
+  border: none;
+  border-radius: 0.25em;
 }
 
 .container {
   padding: 0.75em;
 }
 
+.vertical-spacer {
+  padding: 0.25em 0;
+}
+
+/* Hide default "Browse... [XYZ]" format to add own styled button. */
 #upload-obj-file {
   display: none;
 }
 
+/* Flex positioning styles for an assortment of classes! */
 .data-exfiltration-settings {
   display: flex;
   flex-direction: column;
@@ -59,6 +87,14 @@ button {
   margin: 0.25em 0;
 }
 
+.data-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* General input styles based on type... */
 input[type="number"] {
   width: 4em;
   padding: 0.25em;
@@ -68,6 +104,7 @@ input[type="checkbox"] {
   margin-left: 0.5em;
 }
 
+/* Make fieldset labels semi-bold. */
 fieldset label,
 #top-left {
   font-weight: 600;
@@ -78,19 +115,7 @@ fieldset label,
   height: fit-content;
 }
 
-button,
-input {
-  border: none;
-  border-radius: 0.25em;
-}
-
-.data-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Spacing between each data button, i.e. Export JSON++ depending on where it is on the screen. */
 .container.data-buttons button {
   margin: 0 5px;
 }
@@ -101,8 +126,4 @@ input {
 
 .container.data-buttons button:last-child {
   margin-right: 0;
-}
-
-.vertical-spacer {
-  padding: 0.25em 0;
 }

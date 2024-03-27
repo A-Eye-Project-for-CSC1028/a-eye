@@ -14,7 +14,6 @@ export class Viewer {
   private renderer: THREE.WebGLRenderer;
   private controls!: OrbitControls;
   private object?: THREE.Object3D;
-  // private initialCameraPosition!: THREE.Vector3;
 
   // Post-Processing
   private postScene!: THREE.Scene;
@@ -31,6 +30,10 @@ export class Viewer {
   private useDepthShader: boolean = false;
   private isTakingCapture: boolean = false;
 
+  /**
+   * Sets up scene, i.e. object, lighting, depth mapping capability, etc.
+   * Error message gets displayed if WebGL is not supported by the user's browser.
+   */
   constructor() {
     const width: number = window.innerWidth;
     const height: number = window.innerHeight;
@@ -41,11 +44,12 @@ export class Viewer {
     });
 
     if (
-      this.renderer.capabilities.isWebGL2 === false &&
-      this.renderer.extensions.has("WEBGL_depth_texture") === false
+      (this.renderer.capabilities.isWebGL2 === false &&
+        this.renderer.extensions.has("WEBGL_depth_texture") === false) ||
+      this.supportsExtension === false
     ) {
       this.supportsExtension = false;
-      // TODO: #error <div>
+      document.getElementById("error")!.style.display = "block";
       return;
     }
 
@@ -54,8 +58,6 @@ export class Viewer {
     document.body.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 150);
-
-    // this.initialCameraPosition = this.camera.position; // Save initial camera position for usage with auto-positioning later!
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
@@ -76,6 +78,9 @@ export class Viewer {
     window.addEventListener("resize", this.onWindowResize);
   }
 
+  /**
+   * Updates scene as necessary, i.e. if controls are moved, depth map is enabled, or capture is being taken. Called from main.ts!
+   */
   public animate = () => {
     if (!this.supportsExtension) return;
 
@@ -111,6 +116,9 @@ export class Viewer {
     this.controls.update();
   };
 
+  /**
+   * Renders the current camera position to the screen.
+   */
   public updateCameraPositionDisplay = () => {
     const cameraPosElement = document.getElementById("camera-position");
     if (cameraPosElement) {
@@ -122,21 +130,42 @@ export class Viewer {
     }
   };
 
+  /**
+   * Setter function for the camera's field-of-view.
+   * @param fov Numerical value between 1 and 360.
+   */
   public updateFov = (fov: number) => {
+    if (!(fov >= 1 && fov <= 360)) return;
+
     this.camera.fov = fov;
     this.camera.updateProjectionMatrix();
   };
 
+  /**
+   * Setter function for the camera's near field.
+   * @param near Positive numerical value.
+   */
   public updateNear = (near: number) => {
+    if (!(near >= 0)) return;
+
     this.camera.near = near;
     this.camera.updateProjectionMatrix();
   };
 
+  /**
+   * Setter function for the camera's near field.
+   * @param far Positive numerical value.
+   */
   public updateFar = (far: number) => {
+    if (!(far >= 0)) return;
+
     this.camera.far = far;
     this.camera.updateProjectionMatrix();
   };
 
+  /**
+   * Calculates all positioning data for the rendered object and exports it to the JSON format governed by SceneMetadata and its child types.
+   */
   public downloadDepthInformationAsJSON = () => {
     let screenSpaceData: Depth[] | null = null;
     let worldDepthData: Depth[] | null = null;
@@ -194,19 +223,33 @@ export class Viewer {
     );
   };
 
+  /**
+   * Loads a new 3D model into the scene, removing the old one.
+   */
   public loadNewObject = (url: string) => {
     this.removeOldObjectFromScene();
     this.loadObject(url);
   };
 
+  /**
+   * Toggles depth map functionality.
+   */
   public toggleDepthMap = () => {
     this.useDepthShader = !this.useDepthShader;
   };
 
+  /**
+   * Updates status to begin handling screen capture processing.
+   */
   public captureScene = () => {
     this.isTakingCapture = true;
   };
 
+  /**
+   * Renders the current scene out to a PNG image.
+   *
+   * @returns The Data URL for the finalised scene image.
+   */
   private capture = (): string => {
     const canvas = document.querySelector("canvas");
     const dataUrl: string = canvas!.toDataURL("image/png");
@@ -216,6 +259,11 @@ export class Viewer {
     return dataUrl;
   };
 
+  /**
+   * Makes a hidden object visible again.
+   *
+   * @param id Unique identifier for an object in the Three.js scene.
+   */
   private showObjectById = (id?: number) => {
     if (id === undefined) return;
 
@@ -225,6 +273,11 @@ export class Viewer {
     if (objectToHide) objectToHide.visible = true;
   };
 
+  /**
+   * Hides a visible object.
+   *
+   * @param id Unique identifier for an object in the Three.js scene.
+   */
   private hideObjectById = (id?: number) => {
     if (id === undefined) return;
 
@@ -234,6 +287,9 @@ export class Viewer {
     if (objectToHide) objectToHide.visible = false;
   };
 
+  /**
+   * Prepares an object for rendering within the scene by creating a render target.
+   */
   private createRenderTarget = () => {
     const width: number = window.innerWidth;
     const height: number = window.innerHeight;
@@ -255,6 +311,9 @@ export class Viewer {
     this.target.depthTexture.type = type;
   };
 
+  /**
+   * Deletes unwanted object from the scene.
+   */
   private removeOldObjectFromScene() {
     if (this.object) {
       this.scene.remove(this.object);
@@ -278,6 +337,11 @@ export class Viewer {
     }
   }
 
+  /**
+   * Renders 3D model from .obj file to the scene.
+   *
+   * @param url Location of the model to be loaded in.
+   */
   private loadObject = (url: string = Constants.objectRegistry.sofa.path) => {
     // Load .obj model!
     const loader = new OBJLoader();
@@ -308,6 +372,9 @@ export class Viewer {
     );
   };
 
+  /**
+   * Calculates depth map projection using shaders - displays when toggled in the UI.
+   */
   private createDepthMap = () => {
     this.postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
@@ -330,6 +397,9 @@ export class Viewer {
     this.postScene.add(postQuad);
   };
 
+  /**
+   * Points 'lights' at the object.
+   */
   private setupLights = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     this.ambientLightId = ambientLight.id;
@@ -341,6 +411,12 @@ export class Viewer {
     this.scene.add(directionalLight);
   };
 
+  /**
+   * Finds all vertices on a given 3D object in world space.
+   *
+   * @param geometry
+   * @returns `Vector3[]`
+   */
   private getVertices = (geometry: THREE.BufferGeometry): THREE.Vector3[] => {
     const vertices: THREE.Vector3[] = [];
 
@@ -361,6 +437,13 @@ export class Viewer {
     return vertices;
   };
 
+  /**
+   * Figures out whether or not a vertex is visible to the user - i.e. might be hidden behind other vertices.
+   *
+   * @param worldVertex Vertex's location in 3D space.
+   * @param meshNode
+   * @returns `boolean`
+   */
   private isVertexVisible = (
     worldVertex: THREE.Vector3,
     meshNode: THREE.Mesh
@@ -387,6 +470,12 @@ export class Viewer {
     return distanceToClosestIntersection > distanceToVertex;
   };
 
+  /**
+   * Calculates whereabouts each vertex would be placed when translated to a 2D space, i.e. position on a screen.
+   *
+   * @param canvasDimensions Dimensions to which the points in 3D space should be projected to.
+   * @returns `Vector3[]`
+   */
   private projectVerticesToScreenSpace = (
     canvasDimensions: THREE.Vector2
   ): THREE.Vector3[] => {
@@ -414,6 +503,11 @@ export class Viewer {
     return tempVertices;
   };
 
+  /**
+   * Obtain either actual or scaled screen size.
+   *
+   * @returns `Vector2`
+   */
   private getScreenSpaceDimensions = () => {
     const needToScale = (
       document.getElementById("should-scale-screen-space") as HTMLInputElement
@@ -431,8 +525,12 @@ export class Viewer {
           "scale-screen-space-y"
         ) as HTMLInputElement;
 
+        // Set width + height, ensuring they are both at least 1px.
         width = parseInt(xInput.value);
+        width = width > 0 ? width : 1;
+
         height = parseInt(yInput.value);
+        height = height > 0 ? height : 1;
 
         break;
 
@@ -447,6 +545,9 @@ export class Viewer {
     return new THREE.Vector2(width, height);
   };
 
+  /**
+   * Handles proper resizing of the scene in the case of a browser window resize.
+   */
   private onWindowResize = () => {
     const aspect = window.innerWidth / window.innerHeight;
     this.camera.aspect = aspect;
